@@ -1,17 +1,12 @@
 import { createBareServer } from '@tomphttp/bare-server-node';
 import express from 'express';
 import { createServer } from 'node:http';
-import { join } from 'node:path';
 
 const bare = createBareServer('/bare/');
 const app = express();
-const __dirname = process.cwd();
-
-// Serve the frontend files from the 'public' folder
-app.use(express.static(join(__dirname, 'public')));
 
 app.use((req, res) => {
-    res.status(404).sendFile(join(__dirname, 'public', '404.html'));
+    res.status(404).send('Not found');
 });
 
 const server = createServer();
