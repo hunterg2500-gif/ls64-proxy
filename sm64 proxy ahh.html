@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classroom</title>
+    <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/favicon.png">
+    <style>
+        body { background: #050505; color: #00ff66; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { background: #111; border: 1px solid #222; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 0 30px rgba(0,255,102,0.1); }
+        input { width: 100%; background: transparent; border: none; outline: none; color: white; font-size: 1.2rem; text-align: center; padding: 10px 0; }
+        h1 { letter-spacing: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>LS64</h1>
+    <div class="box">
+        <form id="proxy-form">
+            <input type="text" id="url-input" placeholder="Search or Enter URL..." autocomplete="off">
+        </form>
+    </div>
+    <p style="color: #333; font-size: 10px; margin-top: 20px;">CLOAK: ACTIVE</p>
+
+    <script src="uv/uv.bundle.js"></script>
+    <script src="uv/uv.config.js"></script>
+    <script>
+        const form = document.getElementById('proxy-form');
+        const input = document.getElementById('url-input');
+
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            window.navigator.serviceWorker.register('./sw.js', {
+                scope: __uv$config.prefix
+            }).then(() => {
+                let url = input.value.trim();
+                if (!isUrl(url)) url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                else if (!(url.startsWith('https://') || url.startsWith('http://'))) url = 'https://' + url;
+                window.location.href = __uv$config.prefix + __uv$config.encodeUrl(url);
+            });
+        });
+
+        function isUrl(val = ''){
+            if (/^http(s?):\/\//.test(val) || val.includes('.') && val.substr(0, 1) !== ' ') return true;
+            return false;
+        };
+    </script>
+</body>
+</html>
