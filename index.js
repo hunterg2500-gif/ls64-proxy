@@ -61,6 +61,47 @@ app.get('/', (req, res) => {
         .value { color: #00ff66; }
         .value.ok { color: #00ff66; }
         .value.path { color: #888; }
+        .search-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 28px;
+            width: 90%;
+            max-width: 480px;
+        }
+        .search-input {
+            flex: 1;
+            background: #111;
+            border: 1px solid #1a3320;
+            border-radius: 8px;
+            color: #00ff66;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input::placeholder { color: #333; }
+        .search-input:focus {
+            border-color: #00ff66;
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.15);
+        }
+        .search-btn {
+            background: #00ff66;
+            border: none;
+            border-radius: 8px;
+            color: #050505;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 10px 18px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .search-btn:hover {
+            background: #00cc52;
+            box-shadow: 0 0 16px rgba(0, 255, 102, 0.3);
+        }
         .footer {
             margin-top: 32px;
             color: #222;
@@ -86,7 +127,60 @@ app.get('/', (req, res) => {
             <span class="value path">1.0.0</span>
         </div>
     </div>
+    <form class="search-form" id="searchForm">
+        <input
+            class="search-input"
+            id="searchInput"
+            type="text"
+            placeholder="Search the web or enter a URL..."
+            autocomplete="off"
+            spellcheck="false"
+        />
+        <button class="search-btn" type="submit">GO</button>
+    </form>
     <p class="footer">LS64 PROXY &mdash; BARE SERVER NODE</p>
+    <script>
+        (function () {
+            var BARE = '/bare/';
+            var UV_PREFIX = '/uv/service/';
+
+            // XOR encode matching uv.config.js
+            function xorEncode(str) {
+                var encoded = '';
+                for (var i = 0; i < str.length; i++) {
+                    encoded += String.fromCharCode(str.charCodeAt(i) ^ 2);
+                }
+                return btoa(encoded);
+            }
+
+            function toProxyUrl(raw) {
+                var url = raw.trim();
+                // If it looks like a bare URL (no spaces, has a dot or starts with http)
+                var isUrl = /^https?:\\/\\//.test(url) ||
+                    (/^[^\\s]+\\.[^\\s]+/.test(url) && !/\\s/.test(url));
+                if (isUrl) {
+                    if (!/^https?:\\/\\//.test(url)) url = 'https://' + url;
+                } else {
+                    url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                }
+                return UV_PREFIX + xorEncode(url);
+            }
+
+            // Register service worker so UV can intercept proxied requests
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (e) {
+                    console.warn('SW registration failed:', e);
+                });
+            }
+
+            document.getElementById('searchForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var query = document.getElementById('searchInput').value;
+                if (!query.trim()) return;
+                window.location.href = toProxyUrl(query);
+            });
+        })();
+    </script>
 </body>
 </html>`);
 });
