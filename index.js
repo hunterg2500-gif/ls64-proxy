@@ -1,9 +1,21 @@
 import { createBareServer } from '@tomphttp/bare-server-node';
+import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
 import express from 'express';
 import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const bare = createBareServer('/bare/');
 const app = express();
+
+// Serve Ultraviolet's built static assets (uv.bundle.js, uv.sw.js, etc.) at /uv/
+app.use('/uv/', express.static(uvPath));
+
+// Serve our own public/ directory (config.js, sw.js, etc.)
+app.use(express.static(join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html');
